@@ -96,6 +96,8 @@ spec:
     - --encryption-provider-config-automatic-reload=true
 ```
 
+### 4. Restart your Kubernetes API server
+
 ## Verification
 In order to verify that Infisical KMS encryption is working, we can do the following:
 
@@ -120,7 +122,4 @@ In order to verify that Infisical KMS encryption is working, we can do the follo
    ```
 
    The output should match `mykey: bXlzZWNyZXQ=`, which is the encoded data of `mysecret`.
-
-### 4. Restart your Kubernetes API server
-
 
