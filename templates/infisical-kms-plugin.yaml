@@ -11,7 +11,7 @@ spec:
   hostNetwork: true
   containers:
     - name: infisical-kms-plugin
-      image: infisical/kubernetes-kms:v0.0.1
+      image: infisical/kubernetes-kms:v0.0.2
       imagePullPolicy: IfNotPresent
       args:
         - --ua-client-id=<ua-client-id-here>
