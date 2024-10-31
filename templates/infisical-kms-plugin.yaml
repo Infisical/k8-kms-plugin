@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: infisical-kms-plugin
+  namespace: kube-system
+  labels:
+    tier: control-plane
+    component: infisical-kms-plugin
+spec:
+  priorityClassName: system-node-critical
+  hostNetwork: true
+  containers:
+    - name: infisical-kms-plugin
+      image: infisical/k8-kms-plugin:v0.0.1
+      imagePullPolicy: IfNotPresent
+      args:
+        - --ua-client-id=<ua-client-id-here>
+        - --ua-client-secret=<ua-client-secret-here>
+        - --kms-key=<kms-key-id-here>
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+        runAsUser: 0
+      ports:
+        - containerPort: 8787 # Must match the value defined in --healthz-port
+          protocol: TCP
+      livenessProbe:
+        httpGet:
+          path: /healthz # Must match the value defined in --healthz-path
+          port: 8787 # Must match the value defined in --healthz-port
+        failureThreshold: 2
+        periodSeconds: 10
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 4
+          memory: 2Gi
+      volumeMounts:
+        - name: etc-kubernetes
+          mountPath: /etc/kubernetes
+        - name: sock
+          mountPath: /opt
+  volumes:
+    - name: etc-kubernetes
+      hostPath:
+        path: /etc/kubernetes
+    - name: sock
+      hostPath:
+        path: /opt
