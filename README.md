@@ -24,7 +24,7 @@ The recommended cluster installation method of the KMS plugin is via [static pod
 💡 **IMPORTANT NOTE**: If you have multiple control plane nodes, you will have to perform the following steps for each of them.
 
 ### 1. Add the Infisical KMS plugin
-Create the appropriate resource definition file for the Infisical KMS plugin. You can refer to the file [here](https://github.com/Infisical/k8-kms-plugin/blob/main/templates/infisical-kms-plugin.yaml) as the starting point. The following are the supported flags:
+Create the appropriate resource definition file for the Infisical KMS plugin. You can refer to the file [here](https://github.com/Infisical/k8-kms-plugin/blob/main/templates/infisical-kms-plugin.yaml) as the starting point. The following are the supported arguments:
 | Flag | Default Value | Description |
 |------|--------------|-------------|
 | `--host-url` | `https://app.infisical.com` | URL of Infisical instance |
