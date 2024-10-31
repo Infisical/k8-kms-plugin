@@ -19,7 +19,9 @@ There are multiple ways to authenticate the KMS plugin with Infisical:
 - [Universal Auth](https://infisical.com/docs/documentation/platform/identities/universal-auth): recommended if you're running the cluster on-premise.
 
 ## Installation
-The recommended cluster installation method of the KMS plugin is via [static pods](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod). Thus, you will have to configure the following steps for each of the control plane nodes of your cluster.
+The recommended cluster installation method of the KMS plugin is via [static pods](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod).
+
+💡 **IMPORTANT NOTE**: If you have multiple control plane nodes, you will have to perform the following steps for each of them.
 
 ### 1. Add the Infisical KMS plugin
 Create the appropriate resource definition file for the Infisical KMS plugin. You can refer to the file [here](https://github.com/Infisical/k8-kms-plugin/blob/main/templates/infisical-kms-plugin.yaml) as the starting point. The following are the supported flags:
