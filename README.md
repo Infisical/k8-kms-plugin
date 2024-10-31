@@ -21,8 +21,8 @@ There are multiple ways to authenticate the KMS plugin with Infisical:
 ## Installation
 The recommended cluster installation method of the KMS plugin is via [static pods](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod). Thus, you will have to configure the following steps for each of the control plane nodes of your cluster.
 
-### Add the Infisical KMS plugin
-Create the resource definition file for the Infisical KMS plugin. You can refer to the example [here](/). The following are supported flags:
+### 1. Add the Infisical KMS plugin
+Create the appropriate resource definition file for the Infisical KMS plugin. You can refer to the file [here](/) as the starting point. The following are the supported flags:
 | Flag | Default Value | Description |
 |------|--------------|-------------|
 | `--host-url` | `https://app.infisical.com` | URL of Infisical instance |
@@ -37,6 +37,53 @@ Create the resource definition file for the Infisical KMS plugin. You can refer 
 | `--healthz-port` | `8787` | Port number for health check endpoint |
 | `--healthz-path` | `/healthz` | URL path for health check endpoint |
 | `--healthz-timeout` | `20s` | Timeout duration for health check RPC calls |
+
+💡 **NOTE**: Ensure that you have attached the volume mount for the path "/opt" in the plugin's resource definition.
+
+Save the Infisical KMS plugin resource definition to the `/etc/kubernetes/manifests` directory on the control plane node. This will automatically create a static pod for the KMS plugin which you can confirm by listing the pods in the `kube-system` namespace.
+
+### 2. Create an encryption configuration resource
+Create a new encryption configuration file `/etc/kubernetes/enc/encryption-config.yaml` with the appropriate properties.
+```yaml
+apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+  - resources:
+      - secrets
+    providers:
+      - kms:
+          apiVersion: v2
+          name: infisical-kms-plugin
+          endpoint: unix:///opt/infisicalkms.socket
+          timeout: 20s
+      - identity: {}
+```
+
+### 3. Update the kube-apiserver resource definition
+In the `etc/kubernetes/manifests` directory, open the `kube-apiserver.yaml` file. 
+
+Update the `volumes` section so that it has the following:
+```yaml
+  volumes:
+  ...
+  - hostPath:
+      path: /etc/kubernetes/enc
+    name: enc
+  - hostPath:
+      path: /opt
+    name: socket
+```
+
+Consequently, update the `volumeMounts` section of the `spec.container` property so that it has the following:
+```yaml
+    volumeMounts:
+    ...
+    - mountPath: /etc/kubernetes/enc
+      name: enc
+      readOnly: true
+    - mountPath: /opt
+      name: socket
+```
 
 
 
