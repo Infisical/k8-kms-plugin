@@ -29,5 +29,5 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            infisical/k8-kms-plugin:latest
-            infisical/k8-kms-plugin:${{ github.ref_name }}
+            infisical/kubernetes-kms:latest
+            infisical/kubernetes-kms:${{ github.ref_name }}
