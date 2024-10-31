@@ -38,7 +38,7 @@ Create the appropriate resource definition file for the Infisical KMS plugin. Yo
 | `--healthz-path` | `/healthz` | URL path for health check endpoint |
 | `--healthz-timeout` | `20s` | Timeout duration for health check RPC calls |
 
-💡 **NOTE**: Ensure that you have attached the volume mount for the path "/opt" in the plugin's resource definition.
+💡 **NOTE**: Ensure that you have attached the volume mount for the path `/opt` in the plugin's resource definition.
 
 Save the Infisical KMS plugin resource definition to the `/etc/kubernetes/manifests` directory on the control plane node. This will automatically create a static pod for the KMS plugin which you can confirm by listing the pods in the `kube-system` namespace.
 
@@ -54,7 +54,7 @@ resources:
       - kms:
           apiVersion: v2
           name: infisical-kms-plugin
-          endpoint: unix:///opt/infisicalkms.socket
+          endpoint: unix:///opt/infisicalkms.socket    # This should match the listen-addr declared in the Infisical KMS plugin's static pod definition
           timeout: 20s
       - identity: {}
 ```
@@ -74,7 +74,7 @@ Update the `volumes` section so that it has the following:
     name: socket
 ```
 
-Consequently, update the `volumeMounts` section of the `spec.container` property so that it has the following:
+Consequently, update the `volumeMounts` section of the `spec.container` property so that it uses the volumes in the preceding step.
 ```yaml
     volumeMounts:
     ...
@@ -84,8 +84,43 @@ Consequently, update the `volumeMounts` section of the `spec.container` property
     - mountPath: /opt
       name: socket
 ```
+Then, update the `command` section of the `spec.container` property so that it includes the `encryption-provider-config` and the `encryption-provider-config-automatic-reload` flags.
+```yaml
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --advertise-address=192.168.49.2
+    ...
+    - --encryption-provider-config=/etc/kubernetes/enc/encryption-config.yaml
+    - --encryption-provider-config-automatic-reload=true
+```
 
+## Verification
+In order to verify that Infisical KMS encryption is working, we can do the following:
 
+1. Create a new secret:
 
+   ```bash
+   kubectl create secret generic secret1 -n default --from-literal=mykey=mysecret
+   ```
+
+2. Using `etcdctl`, read the secret from etcd:
+
+   ```bash
+   sudo ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/certs/ca.crt --cert=/etc/kubernetes/certs/etcdclient.crt --key=/etc/kubernetes/certs/etcdclient.key get /registry/secrets/default/secret1
+   ```
+
+3. Check that the stored secret is prefixed with `k8s:enc:kms:v2:infisical-kms-plugin`. This indicates that the secret is stored as encrypted after being processed by the Infisical KMS plugin.
+
+4. To ensure that decryption works, fetch the secret using the following:
+
+   ```bash
+   kubectl get secrets secret1 -o yaml
+   ```
+
+   The output should match `mykey: bXlzZWNyZXQ=`, which is the encoded data of `mysecret`.
+
+### 4. Restart your Kubernetes API server
 
 
