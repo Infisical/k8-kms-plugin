@@ -3,9 +3,11 @@ module github.com/infisical/k8-kms-plugin
 go 1.26.10
 
 // Go 1.23 began rejecting certificates with a negative serial number, and
-// Go 1.25 SHA-1 signatures in TLS 1.2 handshakes. Keep accepting both, so a
-// self-hosted Infisical behind an older private CA or TLS server that
-// worked on Go 1.22 still connects. Every other default is Go 1.26's.
+// Go 1.25 SHA-1 signatures in TLS 1.2 handshakes. Keep accepting both, for a
+// self-hosted Infisical behind an older private CA or TLS server. The other
+// TLS defaults that changed after Go 1.22 stay at Go 1.26's: no 3DES, a
+// post-quantum key exchange in the ClientHello, and no RSA keys under 1024
+// bits. A server or proxy that relies on the old behavior no longer connects.
 godebug (
 	tlssha1=1
 	x509negativeserial=1
